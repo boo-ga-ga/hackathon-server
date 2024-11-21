@@ -1,0 +1,6 @@
+@VDR5_HostAddress = http://localhost:5238
+
+GET {{VDR5_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
