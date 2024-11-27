@@ -7,7 +7,7 @@ namespace VDR5
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Path { get; set; }
+        public string FullPath { get; set; }
         //public long Size { get; set; }
         //public string ContentType { get; set; }
         public DateTime UploadedAt { get; set; }
@@ -22,6 +22,7 @@ namespace VDR5
         {            
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
+            Console.WriteLine(path);
             DbPath = Path.Join(path, "vdr5.db");
         }
 
@@ -37,8 +38,10 @@ namespace VDR5
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired();
-                entity.Property(e => e.Path).IsRequired();
-                //entity.Property(e => e.ContentType).IsRequired();
+                entity.Property(e => e.FullPath).IsRequired();
+
+                entity.HasIndex(e => e.FullPath).IsUnique();
+                
             });
         }
     }
