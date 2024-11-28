@@ -1,5 +1,6 @@
 using VDR5;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +27,21 @@ app.UseHttpsRedirection();
 
 app.MapGet("/ping", () => "pong");
 
-app.MapGet("/files", async (FileDbContext db) =>
-    await db.Files.ToListAsync()
-    );
+//Now add pagination to the files endpoint
+app.MapGet("/files", async (FileDbContext db, int page = 1, int pageSize = 20) => 
+    {
+    if (page < 1 || pageSize < 1)
+    {
+        return Results.BadRequest("Page and page size should be greater than 0");
+    }
+    if(pageSize > 100)
+    {
+        return Results.BadRequest("Page size should be less than 100");
+    }
+
+        var result = await db.Files.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return Results.Ok(result);
+    });
 
 app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
     {
@@ -44,7 +57,7 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
         }
 
         //Check file size and return error if it is more than 200KB
-        if (file.Length > 204800)
+        if (file.Length > 504800)
         {
             return Results.BadRequest("File size is more than 200KB");
         }
@@ -84,7 +97,8 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
                 UploadedAt = DateTime.UtcNow,
                 CreatedAt = createdAt,
                 InternalName = internalFileName,
-                Size = file.Length
+                Size = file.Length,
+                ContentType = file.ContentType
             };
 
             db.Files.Add(newFile);
@@ -95,4 +109,27 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
 
     })
     .DisableAntiforgery();
+
+//Create file download endpoint
+app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
+    {
+        var file = await db.Files.FindAsync(id);
+        if (file == null)
+        {
+            return Results.NotFound();
+        }
+
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        var fileDirectoryPath = Path.Join(path, "vdr5_files");
+        var filePath = Path.Join(fileDirectoryPath, file.InternalName);
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            return Results.NotFound();
+        }
+
+        return Results.File(filePath, contentType: "application/binary", file.Name);
+    });
+
 app.Run();

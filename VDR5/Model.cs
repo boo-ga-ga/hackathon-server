@@ -9,6 +9,7 @@ namespace VDR5
         public string Name { get; set; }
         public string FullPath { get; set; }
         public string InternalName { get; set; }
+        public string ContentType { get; set; }
         public long Size { get; set; }
         
         public DateTime UploadedAt { get; set; }
