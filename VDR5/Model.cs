@@ -8,9 +8,11 @@ namespace VDR5
         public int Id { get; set; }
         public string Name { get; set; }
         public string FullPath { get; set; }
-        //public long Size { get; set; }
-        //public string ContentType { get; set; }
+        public string InternalName { get; set; }
+        public long Size { get; set; }
+        
         public DateTime UploadedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     public class FileDbContext : DbContext
@@ -29,7 +31,7 @@ namespace VDR5
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={DbPath}");
+            => options.UseSqlite($"Data Source={DbPath};Pooling=false");
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
