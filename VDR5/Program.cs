@@ -30,9 +30,29 @@ app.MapGet("/files", async (FileDbContext db) =>
     await db.Files.ToListAsync()
     );
 
-app.Run();
+app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
+    {
+        var allFiles = await db.Files.ToListAsync();
+        
+        //Find the file with the same name
+        var existingFile = allFiles.FirstOrDefault(f => f.Name == file.FileName);
+        if (existingFile != null)
+        {
+            return Results.BadRequest($"File with name {file.FileName} already exists");
+        }
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+        var fileName = file.FileName;
+
+        var newFile = new VDR5.File
+        {
+            Name = file.FileName,
+            FullPath = file.FileName,
+            UploadedAt = DateTime.UtcNow
+        };
+        db.Files.Add(newFile);
+        await db.SaveChangesAsync();
+
+        return Results.Created($"/files/{newFile.Id}", newFile);
+    })
+    .DisableAntiforgery();
+app.Run();

@@ -1,3 +1,4 @@
 {
-    "dotnet.defaultSolution": "VDR5.sln"
+    "dotnet.defaultSolution": "VDR5.sln",
+    "zencoder.enableRepoIndexing": true
 }
