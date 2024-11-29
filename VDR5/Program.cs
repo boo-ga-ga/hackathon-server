@@ -64,7 +64,7 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
 
         //Save the file in folder
         var internalFileName = Guid.NewGuid().ToString();
-        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var folder = Environment.SpecialFolder.CommonApplicationData;
         var path = Environment.GetFolderPath(folder);
         var fileDirectoryPath = Path.Join(path, "vdr5_files");
         if (!Directory.Exists(fileDirectoryPath))
@@ -120,7 +120,7 @@ app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
             return Results.NotFound();
         }
 
-        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var folder = Environment.SpecialFolder.CommonApplicationData;
         var path = Environment.GetFolderPath(folder);
         var fileDirectoryPath = Path.Join(path, "vdr5_files");
         var filePath = Path.Join(fileDirectoryPath, file.InternalName);
