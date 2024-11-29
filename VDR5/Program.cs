@@ -74,7 +74,8 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
         var filePath = Path.Join(fileDirectoryPath, internalFileName);
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            await file.CopyToAsync(stream);
+            await file.CopyToAsync(stream); 
+            
         }
 
         //Save the file in database
