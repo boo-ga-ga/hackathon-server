@@ -20,21 +20,11 @@ namespace VDR5
     {
         public string DbPath { get; }        
         public DbSet<File> Files { get; set; }
-
-        public FileDbContext()
-        {            
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
-            Console.WriteLine(path);
-            DbPath = Path.Join(path, "vdr5.db");
+        
+        public FileDbContext(DbContextOptions<FileDbContext> options)
+            : base(options)
+        {
         }
-
-        // The following configures EF to create a Sqlite database file in the
-        // special "local" folder for your platform.
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={DbPath};Pooling=false");
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<File>(entity =>
