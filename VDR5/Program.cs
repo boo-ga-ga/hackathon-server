@@ -29,7 +29,7 @@ app.MapGet("/ping", () => "pong");
 
 //Now add pagination to the files endpoint
 app.MapGet("/files", async (FileDbContext db, int page = 1, int pageSize = 20) => 
-    {
+{
     if (page < 1 || pageSize < 1)
     {
         return Results.BadRequest("Page and page size should be greater than 0");
@@ -39,9 +39,10 @@ app.MapGet("/files", async (FileDbContext db, int page = 1, int pageSize = 20) =
         return Results.BadRequest("Page size should be less than 100");
     }
 
-        var result = await db.Files.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        return Results.Ok(result);
-    });
+    var result = await db.Files.OrderBy(f => f.Id)
+        .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+    return Results.Ok(result);
+});
 
 app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
     {
@@ -113,24 +114,24 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
 
 //Create file download endpoint
 app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
+{
+    var file = await db.Files.FindAsync(id);
+    if (file == null)
     {
-        var file = await db.Files.FindAsync(id);
-        if (file == null)
-        {
-            return Results.NotFound();
-        }
+        return Results.NotFound();
+    }
 
-        var folder = Environment.SpecialFolder.CommonApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var fileDirectoryPath = Path.Join(path, "vdr5_files");
-        var filePath = Path.Join(fileDirectoryPath, file.InternalName);
+    var folder = Environment.SpecialFolder.CommonApplicationData;
+    var path = Environment.GetFolderPath(folder);
+    var fileDirectoryPath = Path.Join(path, "vdr5_files");
+    var filePath = Path.Join(fileDirectoryPath, file.InternalName);
 
-        if (!System.IO.File.Exists(filePath))
-        {
-            return Results.NotFound();
-        }
+    if (!System.IO.File.Exists(filePath))
+    {
+        return Results.NotFound();
+    }
 
-        return Results.File(filePath, contentType: "application/binary", file.Name);
-    });
+    return Results.File(filePath, contentType: "application/binary", file.Name);
+});
 
 app.Run();
