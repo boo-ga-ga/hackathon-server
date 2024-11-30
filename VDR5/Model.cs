@@ -12,8 +12,10 @@ namespace VDR5
         public string ContentType { get; set; }
         public long Size { get; set; }
         
-        public DateTime UploadedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public DateTime CreatedAt { get; set; }
+        
+        public bool IsDeleted { get; set; }
     }
 
     public class FileDbContext : DbContext

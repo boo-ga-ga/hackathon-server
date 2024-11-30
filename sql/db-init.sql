@@ -22,4 +22,11 @@ CREATE UNIQUE INDEX "IX_Files_FullPath" ON "Files" ("FullPath");
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20241129192526_Initial_Create', '9.0.0');
 
+ALTER TABLE "Files" RENAME COLUMN "UploadedAt" TO "UpdatedAt";
+
+ALTER TABLE "Files" ADD "IsDeleted" boolean NOT NULL DEFAULT FALSE;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20241130130134_Files_IsDeleted_Column_Add', '9.0.0');
+
 COMMIT;
