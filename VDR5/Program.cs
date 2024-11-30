@@ -47,7 +47,16 @@ app.MapGet("/files", async (FileDbContext db, int page = 1, int pageSize = 20) =
         .OrderBy(f => f.Id)
         .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     
-    return Results.Ok(result);
+    //Map the result to FileDto
+    return Results.Ok(result.Select(f => new FileDto
+    {
+        Id = f.Id,
+        Name = f.Name,
+        ContentType = f.ContentType,
+        Size = f.Size,
+        UpdatedAt = f.UpdatedAt,
+        CreatedAt = f.CreatedAt
+    }));
 });
 
 app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
@@ -90,7 +99,16 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
 
             await db.SaveChangesAsync();
 
-            return Results.Created($"/files/{existingFile.Id}", existingFile);
+            //Map the result to FileDto
+            return Results.Created("/files/{existingFile.Id}", new FileDto
+            {
+                Id = existingFile.Id,
+                Name = existingFile.Name,
+                ContentType = existingFile.ContentType,
+                Size = existingFile.Size,
+                UpdatedAt = existingFile.UpdatedAt,
+                CreatedAt = existingFile.CreatedAt
+            });
         }
         else
         {
@@ -109,7 +127,16 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
             db.Files.Add(newFile);
             await db.SaveChangesAsync();
 
-            return Results.Created($"/files/{newFile.Id}", newFile);
+            //Map the result to FileDto
+            return Results.Created($"/files/{newFile.Id}", new FileDto
+            {
+                Id = newFile.Id,
+                Name = newFile.Name,
+                ContentType = newFile.ContentType,
+                Size = newFile.Size,
+                UpdatedAt = newFile.UpdatedAt,
+                CreatedAt = newFile.CreatedAt
+            });
         }
 
     })
@@ -118,8 +145,9 @@ app.MapPost("files/upload", async (FileDbContext db, IFormFile file) =>
 //Create file download endpoint
 app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
 {
+    //Find not deleted file by id
     var file = await db.Files.FindAsync(id);
-    if (file == null)
+    if (file == null || file.IsDeleted)
     {
         return Results.NotFound();
     }
@@ -132,6 +160,21 @@ app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
     }
 
     return Results.File(filePath, contentType: "application/binary", file.Name);
+});
+
+app.MapDelete("/files/{id}", async (int id, FileDbContext db) =>
+{
+    var file = await db.Files.FindAsync(id);
+    if (file == null)
+    {
+        return Results.NotFound();
+    }
+
+    file.IsDeleted = true;
+    file.UpdatedAt = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
 });
 
 app.Run();

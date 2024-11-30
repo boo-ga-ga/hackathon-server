@@ -1,8 +1,13 @@
 namespace VDR5
 {
-    public class FileUploadDto
+    public class FileDto
     {
-        public string FileName { get; set; }
-        IFormFile File  { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string ContentType { get; set; }
+        public long Size { get; set; }
+        
+        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
