@@ -27,8 +27,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/ping", () => "pong");
 
-var folder = Environment.SpecialFolder.LocalApplicationData;   //var folder = Environment.SpecialFolder.CommonApplicationData;
-var path = Environment.GetFolderPath(folder);
+var path = builder.Environment.ContentRootPath;
 var fileDirectoryPath = Path.Join(path, "vdr5_files");
 
 //Now add pagination to the files endpoint
@@ -151,12 +150,14 @@ app.MapGet("/files/download/{id}", async (int id, FileDbContext db) =>
     {
         return Results.NotFound();
     }
+    
+    Console.WriteLine(Path.Join(fileDirectoryPath, file.InternalName));
 
     var filePath = Path.Join(fileDirectoryPath, file.InternalName);
 
     if (!System.IO.File.Exists(filePath))
     {
-        return Results.NotFound();
+        return Results.InternalServerError("File is not available in the storage.");
     }
 
     return Results.File(filePath, contentType: "application/binary", file.Name);
